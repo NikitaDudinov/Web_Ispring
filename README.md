@@ -1,1 +1,1 @@
-Nikita Dudinov PS - 11 Hello people
+Nikita Dudinov PS - 11

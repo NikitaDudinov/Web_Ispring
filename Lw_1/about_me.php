@@ -6,7 +6,7 @@
     <title>Document</title>
 </head>
 <body>
-    <p>Никита Дудинов</p>
+    <p>Дудинов Никита Михайлович</p>
     <?php
     $years = "2005";
     $month = "01";

@@ -7,3 +7,4 @@ echo '<p> Gender: '. htmlentities($user->GetGender(), ENT_QUOTES) . '</p>';
 echo '<p> Email: '. htmlentities($user->GetEmail(), ENT_QUOTES) . '</p>';
 echo '<p> Phone: ' . htmlentities($user->GetPhone(), ENT_QUOTES) . '</p>';
 echo '<p> Avatar Path: '. htmlentities($user->GetAvatarPath(), ENT_QUOTES) . '</p>';
+echo '<img src="../uploads/'. htmlentities($user->GetAvatarPath(), ENT_QUOTES). '" alt="">';

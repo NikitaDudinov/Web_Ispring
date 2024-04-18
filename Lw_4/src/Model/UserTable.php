@@ -20,12 +20,12 @@ class UserTable
             $statement->execute([
                 ':first_name' => $User->GetFirstName(),
                 ':last_name' => $User->GetLastName(),
-                ':middle_name' => $User->GetMiddleName(),
+                ':middle_name' => !empty($User->GetMiddleName()) ? $User->GetMiddleName() : null,
                 ':gender' => $User->GetGender(),
                 ':birth_date' => $User->GetBirthDate(),
                 ':email' => $User->GetEmail(),
-                ':phone' => $User->GetPhone(),
-                ':avatar_path' => $User->GetAvatarPath(),
+                ':phone' => !empty($User->GetPhone()) ? $User->GetPhone() : null,
+                ':avatar_path' => !empty($User->GetAvatarPath()) ? $User->GetAvatarPath(): null,
             ]);
                 return (int)$this->connection->lastInsertId();
         }catch(\PDOException $e){
@@ -53,6 +53,45 @@ class UserTable
         }
     }
 
+    public function delete(int $userId): ?int
+    {
+        $query = "DELETE FROM user  WHERE user_id = :user_id";
+            $statement = $this->connection->prepare($query);
+            try {
+                $statement->execute([
+                    ':user_id' => $userId
+                ]);
+                    return $userId;
+            }catch(\PDOException $e){
+                throw new \RuntimeException($e->getMessage(), (int) $e->getCode());
+            }
+     
+    }
+
+    public function update($key, $value, int $userId): void
+    {
+        $query = "UPDATE user SET .$key  = $value WHERE user_id = :user_id";
+        $statement = $this->connection->prepare($query);
+        try {
+            $statement->execute([
+                ":user_id" => $userId
+            ]);
+                // return (int)$this->connection->lastInsertId();
+        }catch(\PDOException $e){
+            throw new \RuntimeException($e->getMessage(), (int) $e->getCode());
+        }
+    }
+
+    public function update_avatar_path(int $userId, string $format): void
+    {
+        $query = "UPDATE user SET avatar_path = :link_avatar WHERE user_id = $userId";
+        $statement = $this->connection->prepare($query);
+        $statement->execute(
+            [
+                ':link_avatar' => "avatar".$userId . $format
+            ]
+        );
+    }
     private function createUserFromRow(array $row): User
     {
         return new User((int)$row['user_id'], $row['first_name'], $row['last_name'],$row['middle_name'] , $row['gender'], $row['birth_date'], $row['email'], $row['phone'], $row['avatar_path']);

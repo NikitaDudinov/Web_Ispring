@@ -1,8 +1,7 @@
-<head>
-    <title>Add post</title>
-</head>
-<body>
-<form action="/add_user.php" method="post" enctype="multipart/form-data">
+<form action="/update_user.php" method="post" enctype="multipart/form-data">
+    <div>
+        <input name="user_id" id="user_id" type="hidden" value=<?=$_POST['user_id']?>>
+    </div>
     <div>
         <label for="first_name">first_name:</label>
         <input name="first_name" id="first_name" type="string">
@@ -42,29 +41,13 @@
     <button type="submit">Submit</button>
 </form>
 
-<form action="/show_user.php" method="get">
-    <div>
-        <label for="first_name">Введите id пользователя:</label>
-        <input name="user_id" id="user_id" type="int">
-    </div>
-    <button type="submit">Submit</button>
-</form>
+<?php
+use App\Controller\UserController;
 
-<form action="/delete_user.php" method="post">
-    <div>
-        <label for="user_id">Введите id пользователя которого нужно удалить:</label>
-        <input name="user_id" id="user_id" type="int">
-    </div>
-    <button type="submit">Submit</button>
-</form>
+require_once __DIR__ .'/vendor/autoload.php';
+var_dump($_POST);
+$controller = new UserController();
+$controller->updateUser($_POST);
+$controller->showUser($_POST);
 
-<form action="/update_user.php" method="post">
-    <div>
-        <label for="user_id">Введите id пользователя которого нужно изменить:</label>
-        <input name="user_id" id="user_id" type="int">
-    </div>
-    <button type="submit">Submit</button>
-</form>
 
-</body>
-</html>

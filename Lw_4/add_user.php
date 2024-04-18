@@ -2,7 +2,6 @@
 use App\Controller\UserController;
 
 require_once __DIR__ .'/vendor/autoload.php';
-
 $controller = new UserController();
 $userId = $controller->publishUser($_POST);
 if ($userId != null){

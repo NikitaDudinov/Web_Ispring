@@ -7,7 +7,7 @@ use App\Model\UserTable;
 use App\Model\User;
 use App\Infrastructure\ConnectionProvider;
 
-class UserController
+class UserController 
 {
     private UserTable $userTable;
     public function __construct()
@@ -18,7 +18,7 @@ class UserController
 
     public function index(): void
     {
-        require __DIR__ . '/../View/add_post_form.php';
+        require __DIR__ . '/../View/choise_action.php';
     }
 
     public function publishUser(array $request): ?int
@@ -67,7 +67,7 @@ class UserController
 
     }
 
-    public function showUser(array $request): void
+    public function showUser(array $request): ?User
     {
         $id = $request['user_id'] ?? null;
         if ($id === null)
@@ -75,7 +75,15 @@ class UserController
             throw new \InvalidArgumentException('Parameter id is not defined');
         }
         $user = $this->userTable->find((int) $id);
-        require __DIR__ . '/../View/user.php';
+        if($user != null){
+            require __DIR__ . '/../View/user.php';
+        }
+        return $user;
+    }
+    public function showAllUser(): array
+    {
+        $users = $this->userTable->findAllUsers();
+        return $users;
     }
 
     public function deleteUser(array $request): ?int
@@ -88,11 +96,41 @@ class UserController
         return $this->userTable->delete((int) $id);
     }
 
-    public function updateUser(array $request): void
+    public function updateUser(array $request): ?User
     {
         $userId = $request['user_id'];
-        foreach($request as $key => $value){
-            $this->userTable->update($key, $value, $userId);
+        $user = $this->userTable->find((int) $userId);
+        if($user != NULL){
+            try{
+                $this->userTable->update($user, $request);
+                if(!empty($_FILES["ImageFile"]["tmp_name"])){
+                    $format = mime_content_type($_FILES["ImageFile"]["tmp_name"]) ;
+                    switch ($format) {
+                        case 'image/png':
+                            $format = '.png';
+                            break;
+                        case 'image/gif':
+                             $format = '.gif';
+                            break;
+                        case 'image/jpeg':
+                             $format = '.jpeg';
+                            break;
+                        default:
+                            $format = null;
+                    }
+                    if($format != null){
+                        move_uploaded_file($_FILES['ImageFile']['tmp_name'], "uploads/avatar" . $userId . $format);
+                        $this->userTable->update_avatar_path(intval($userId), $format);
+                    }
+                } 
+            $user = $this->userTable->find((int) $userId);    
+            return $user;
+            }catch(\Exception $e){
+                return null;
+            }
+        }else{
+            header("Location: http://localhost:8000/");
+            die();
         }
     }
 }

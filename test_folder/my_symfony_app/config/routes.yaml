@@ -1,0 +1,39 @@
+index:
+    path: /
+    controller: App\Controller\UserController::index
+    methods: GET
+
+add_user_form:
+    path: /user/publish_form
+    controller: App\Controller\UserController::publish_form
+
+
+delete_user_form:
+    path: /user/delete_form
+    controller: App\Controller\UserController::delete_form
+
+show_user_form:
+    path: /user/show_form
+    controller: App\Controller\UserController::show_form
+
+add_user:
+    path: /user/publish
+    controller: App\Controller\UserController::publishUser
+    methods: POST
+
+delete_user:
+    path: /user/delete
+    controller: App\Controller\UserController::deleteUser
+    methods: POST    
+
+find_user:
+    path: /user/find
+    controller: App\Controller\UserController::findUser
+    methods: GET
+
+show_user:
+    path: /user/{userId}
+    controller: App\Controller\UserController::showUser
+    methods: GET
+
+

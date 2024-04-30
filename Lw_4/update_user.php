@@ -31,10 +31,6 @@
         <input name="phone" id="phone" type="string">
     </div>
     <div>
-        <label for="avatar_path">avatar_path:</label>
-        <input name="avatar_path" id="avatar_path" type="string">
-    </div>
-    <div>
         <label for="image">Image:</label>
         <input type="file" id="ImageFile" name="ImageFile" accept="image/png, image/gif, image/jpeg"/>
     </div>
@@ -45,9 +41,20 @@
 use App\Controller\UserController;
 
 require_once __DIR__ .'/vendor/autoload.php';
-var_dump($_POST);
 $controller = new UserController();
-$controller->updateUser($_POST);
-$controller->showUser($_POST);
+$user = $controller->updateUser($_POST);
+if(!empty($user)){
+    $user = $controller->updateUser($_POST);
+    echo '<p> First Name: '. htmlentities($user->GetFirstName(), ENT_QUOTES) . '</p>';
+    echo '<p> Last Name: '. htmlentities($user->GetLastName(), ENT_QUOTES) . '</p>';
+    echo '<p> Middle Name: '. htmlentities($user->GetMiddleName(), ENT_QUOTES) . '</p>';
+    echo '<p> Gender: '. htmlentities($user->GetGender(), ENT_QUOTES) . '</p>';
+    echo '<p> Email: '. htmlentities($user->GetEmail(), ENT_QUOTES) . '</p>';
+    echo '<p> Phone: ' . htmlentities($user->GetPhone(), ENT_QUOTES) . '</p>';
+    if($user->GetAvatarPath() !== null){
+        echo '<p> Avatar Path: '. htmlentities($user->GetAvatarPath(), ENT_QUOTES) . '</p>';
+        echo '<img src="../uploads/'. htmlentities($user->GetAvatarPath(), ENT_QUOTES). '" alt="">';
+    }
+}
 
 

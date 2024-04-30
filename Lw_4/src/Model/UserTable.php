@@ -53,6 +53,18 @@ class UserTable
         }
     }
 
+    public function findAllUsers(): ?array
+    {
+        $arr = [];
+        $sql = "SELECT * FROM user";
+        if($result = $this->connection->query($sql)){
+        foreach($result as $row){
+            $arr = $arr +[$row['user_id']=>$row['first_name']];
+    }
+    return $arr;
+}
+    }
+
     public function delete(int $userId): ?int
     {
         $query = "DELETE FROM user  WHERE user_id = :user_id";
@@ -68,15 +80,23 @@ class UserTable
      
     }
 
-    public function update($key, $value, int $userId): void
+    public function update(user $user, array $request): ?int
     {
-        $query = "UPDATE user SET .$key  = $value WHERE user_id = :user_id";
+        $query = 'UPDATE `user` SET first_name = :first_name, last_name = :last_name, middle_name =:middle_name, gender = :gender, birth_date = :birth_date, email = :email, phone = :phone, avatar_path := :avatar_path WHERE user_id = :user_id';
         $statement = $this->connection->prepare($query);
         try {
             $statement->execute([
-                ":user_id" => $userId
+                ':user_id' => $user->getUserId(),
+                ':first_name' => !empty($request['first_name']) ? $request['first_name'] : $user->getFirstName(),
+                ':last_name' => !empty($request['last_name']) ? $request['last_name'] : $user->getLastName(),
+                ':middle_name' => !empty($request['middle_name']) ? $request['middle_name'] : $user->getMiddleName(),
+                ':gender' => !empty($request['gender']) ? $request['gender'] : $user->getGender(),
+                ':birth_date' => !empty($request['birth_date']) ? $request['birth_date'] : $user->getBirthDate(),
+                ':email' => !empty($request['email']) ? $request['email'] : $user->getEmail(),
+                ':phone' => !empty($request['phone']) ? $request['phone'] : $user->getPhone(),
+                ':avatar_path' => !empty($request['avatar_path']) ? $request['avatar_path'] : $user->getAvatarPath(),
             ]);
-                // return (int)$this->connection->lastInsertId();
+            return $user->getUserId();
         }catch(\PDOException $e){
             throw new \RuntimeException($e->getMessage(), (int) $e->getCode());
         }

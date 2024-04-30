@@ -32,39 +32,10 @@
         <input name="phone" id="phone" type="string">
     </div>
     <div>
-        <label for="avatar_path">avatar_path:</label>
-        <input name="avatar_path" id="avatar_path" type="string">
-    </div>
-    <div>
         <label for="image">Image:</label>
         <input type="file" id="ImageFile" name="ImageFile" accept="image/png, image/gif, image/jpeg"/>
     </div>
     <button type="submit">Submit</button>
 </form>
-
-<form action="/show_user.php" method="get">
-    <div>
-        <label for="first_name">Введите id пользователя:</label>
-        <input name="user_id" id="user_id" type="int">
-    </div>
-    <button type="submit">Submit</button>
-</form>
-
-<form action="/delete_user.php" method="post">
-    <div>
-        <label for="user_id">Введите id пользователя которого нужно удалить:</label>
-        <input name="user_id" id="user_id" type="int">
-    </div>
-    <button type="submit">Submit</button>
-</form>
-
-<form action="/update_user.php" method="post">
-    <div>
-        <label for="user_id">Введите id пользователя которого нужно изменить:</label>
-        <input name="user_id" id="user_id" type="int">
-    </div>
-    <button type="submit">Submit</button>
-</form>
-
 </body>
 </html>

@@ -1,0 +1,6 @@
+{% extends "base.html.twig" %}
+{% block title %}Add User{% endblock %}
+{% block content %} 
+    {% include "add_user_form.html.twig" with [action, user_id] %}
+    {% include "user.html.twig" with [user] %}
+{% endblock %}

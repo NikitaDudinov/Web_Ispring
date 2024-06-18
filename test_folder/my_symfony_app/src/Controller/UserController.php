@@ -3,159 +3,147 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Database\ConnectionProvider;
-use App\Database\UserTable;
-use App\Model\User;
-use App\View\PhpTemplateEngine;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-
+use App\Service\UserServiceInterface;
+use App\Service\ImageServiceInterface;
 
 class UserController extends AbstractController
 {
-    private UserTable $userTable;
-
-    public function __construct()
+    private UserServiceInterface $userService;
+    private ImageServiceInterface $imageService;
+    public function __construct(UserServiceInterface $userService, ImageServiceInterface $imageService)
     {
-        $this->userTable = new UserTable(ConnectionProvider::connectDatabase());
+        $this->userService = $userService;
+        $this->imageService = $imageService;
     }
 
     public function index(): Response
     {
-        $contents = PhpTemplateEngine::render('mainpage.php');
-        return new Response($contents);
+        return $this->render('index.html.twig', ['array_action' => [['Добавить пользователя', '/user/publish_form'], 
+                                                                    ['Удалить пользователя', '/user/delete_form'],
+                                                                    ['Показать пользователя', '/user/show_form'],
+                                                                    ['Изменить пользователя', '/user/update_form'],
+                                                                    ['Отобразить всех', '/users'],
+                                                                   ]]);
     }
 
     public function publish_form(): Response
     {
-        $contents = PhpTemplateEngine::render('add_user_form.php');
-        return new Response($contents);
+        return $this->render('add_user.html.twig', ['action' => '/user/publish', 'user_id' => '']);
     }
 
     public function delete_form(): Response
     {
-        $contents = PhpTemplateEngine::render('delete_user_form.php');
-        return new Response($contents);
+        return $this->render('input_id.html.twig', ['title' => 'Введите id пользователя, котрого нужно удалить', 'action' => '/user/delete', 'method' => 'POST']);
     }
 
     public function show_form(): Response
     {
-        $contents = PhpTemplateEngine::render('show_user_form.php');
-        return new Response($contents);
+        return $this->render('input_id.html.twig', ['title' => 'Введите id пользователя, котрого нужно показать', 'action' => '/user/show', 'method' => 'GET']);
+    }
+
+    public function update_form(): Response
+    {     
+        return $this->render('input_id.html.twig', ['title' => 'Введите id пользователя которого нужно изменить:', 'action' => '/user/update_content', 'method' => 'POST']);
+    }
+
+    public function showAllUser(): Response
+    {
+        $ListUsers = $this->userService->showUsers();
+        return $this->render('list_users.html.twig', ['users_list' => $ListUsers]);
     }
 
     public function publishUser(Request $request): Response
     {
-        try{
-            $user = new User(
-                null, 
-                $request->get('first_name'), 
-                $request->get('last_name'), 
-                $request->get('middle_name'), 
-                $request->get('gender'), 
-                $request->get('birth_date'), 
-                $request->get('email'), 
-                $request->get('phone'),
-                $request->get('avatar_path'),
-            );
-            $userId = $this->userTable->add($user);
-            var_dump($_FILES);
-            if(!empty($_FILES["ImageFile"]["tmp_name"])){
-                $format = mime_content_type($_FILES["ImageFile"]["tmp_name"]) ;
-                var_dump($format);
-                switch ($format) {
-                    case 'image/png':
-                        $format = '.png';
-                        break;
-                    case 'image/gif':
-                         $format = '.gif';
-                        break;
-                    case 'image/jpeg':
-                         $format = '.jpeg';
-                        break;
-                    default:
-                        $format = null;
-                }
-                if($format != null){
-                    move_uploaded_file($_FILES['ImageFile']['tmp_name'], "./uploads/avatar" . $userId . $format);
-                    $this->userTable->update_avatar_path($userId, $format);
-                }
-                else{
-                    echo "Неверный формат картинки";
-                }
-            }
-        }catch(\Exception $e){
-            echo "Error database:". $e->getMessage() ."";
+        $imageData = $request->files->get('ImageFile');
+        if ($imageData !== null)
+        {
+            $imageArr = [
+                'type' => $imageData->getClientMimeType(),
+                'name' => $imageData->getFilename(),
+                'tmp_name' => $imageData->getPathname(),
+                'error' => $imageData->getError(),
+            ];
+            $pathImage = $this->imageService->moveImageToUploads($imageArr);
         }
-         return $this->redirectToRoute('show_user', ['userId' => $userId], Response::HTTP_SEE_OTHER);
+        else{
+            $pathImage = null;
+        }   
+        $userId = $this->userService->saveUser($request->get('first_name'), $request->get('last_name'), $request->get('middle_name'), $request->get('gender'), $request->get('birth_date'), $request->get('email'), $request->get('phone'), $pathImage);
+        if($userId === null){
+            $message = 'Остались поля, котороые должны быть заполненными';
+            return $this->render('user_page.html.twig', ['message' => $message]);
+        }
+        return $this->redirectToRoute('show_user', ['user_id' => $userId], Response::HTTP_SEE_OTHER);        
     }
 
-    public function showUser(int $userId): Response
+    public function showUser(Request $request): Response
     {
-        if ($userId === null)
+        $userId =  $request->get('user_id');
+        if(empty($userId))
         {
-            throw new \InvalidArgumentException('Parameter id is not defined');
+            return $this->redirect('index');
         }
-        $user = $this->userTable->find((int) $userId);
-        if (!$user)
+        $user =$this->userService->getUser((int)$userId);
+        if($user !== null)
         {
-            throw $this->createNotFoundException();
+            return $this->render('view_user.html.twig', ['user' => $user]);
         }
-        $contents = PhpTemplateEngine::render('user.php', ['user' => $user]);
-        return new Response($contents);
-    }
-    public function findUser(Request $request): Response
-    {
-        $userId = $request->get('user_id') ?? null;
-        if ($userId === null)
-        {
-            throw new \InvalidArgumentException('Parameter id is not defined');
-        } 
         else
         {
-            return $this->redirectToRoute('show_user', ['userId' => $userId], Response::HTTP_SEE_OTHER);
+            $message = "Пользователя с id = $userId не существует";
+            return $this->render('user_page.html.twig', ['message' => $message]);
         }
     }
-    public function deleteUser(Request $request): Response
+    public function deleteuser(Request $request): ?Response
     {
-       $id = $request->get('user_id') ?? null;
-        if ($id === null)
+        $userId = $request->get('user_id') ?? null;
+        if(!empty($userId ))
         {
-            throw new \InvalidArgumentException('Parameter id is not defined');
-        }
-        $this->userTable->delete((int) $id);
-        return $this->redirectToRoute('index');
-    }
-
-    public function updateUser(array $request): void
-    {
-        $userId = $request['user_id'];
-        foreach($request as $key => $value){
-            if(!empty($value) && $key != 'user_id'){
-                $this->userTable->update($key, $value, intval($userId));
+            $avatarPath = $this->userService->deleteUser((int) $userId);
+            if(!empty($avatarPath)){
+                $this->imageService->deleteImage($avatarPath);
+                $message = "Пользователя с id = $userId успешно удален";
+                return $this->render('user_page.html.twig', ['message' => $message]);
             }
-            if(!empty($_FILES["ImageFile"]["tmp_name"])){
-                $format = mime_content_type($_FILES["ImageFile"]["tmp_name"]) ;
-                switch ($format) {
-                    case 'image/png':
-                        $format = '.png';
-                        break;
-                    case 'image/gif':
-                         $format = '.gif';
-                        break;
-                    case 'image/jpeg':
-                         $format = '.jpeg';
-                        break;
-                    default:
-                        $format = null;
-                }
-                if($format != null){
-                    move_uploaded_file($_FILES['ImageFile']['tmp_name'], "uploads/avatar" . $userId . $format);
-                    $this->userTable->update_avatar_path(intval($userId), $format);
-                }
-            }    
+            $message = "Пользователя с id = $userId не существует";
+            return $this->render('user_page.html.twig', ['message' => $message]);
         }
     }
-}
+    
 
+    public function updateUser(Request $request): ?Response
+    {
+        $userId = $request->get('user_id');
+        $user =$this->userService->getUser((int)$userId);
+        if(empty($user))
+        {
+            $message = "Пользователя с таким id не существует";
+            return $this->render('user_page.html.twig', ['message' => $message]);
+        }
+        $pathImage = $this->userService->getUserPathImage((int) $userId);
+        if(empty($request->files->get('ImageFile')))
+        {
+            $newPathImage = null;
+        }
+        else
+        {
+            $imageData = $request->files->get('ImageFile');
+            if ($imageData !== null)
+            {
+                $imageArr = [
+                    'type' => $imageData->getClientMimeType(),
+                    'name' => $imageData->getFilename(),
+                    'tmp_name' => $imageData->getPathname(),
+                    'error' => $imageData->getError(),
+                ];
+            }
+            $newPathImage = $this->imageService->updateImage($pathImage, $imageArr);
+        }
+        $user = $this->userService->updateUser((int) $userId, $request->get('first_name'), $request->get('last_name'), $request->get('middle_name'), $request->get('gender'), $request->get('birth_date'), $request->get('email'), $request->get('phone'), $newPathImage);    
+        return $this->render('update_user_page.html.twig', ['action' => '/user/update_content', 'user' => $user, 'user_id' => $userId]);
+    }
+
+}

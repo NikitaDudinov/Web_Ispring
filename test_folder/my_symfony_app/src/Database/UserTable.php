@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace App\Database;
 
-use App\Model\User;
+use App\Entity\User;
+use Symfony\Component\HttpFoundation\Request;
 
     class UserTable
     {
@@ -31,7 +32,9 @@ use App\Model\User;
                     ':avatar_path' => !empty($User->GetAvatarPath()) ? $User->GetAvatarPath(): null,
                 ]);
                     return (int)$this->connection->lastInsertId();
-            }catch(\PDOException $e){
+            }
+            catch(\PDOException $e)
+            {
                 throw new \RuntimeException($e->getMessage(), (int) $e->getCode());
             }
     
@@ -51,7 +54,9 @@ use App\Model\User;
                     return $this->createUserFromRow($row);
                 }
                 return null;
-            } catch(\PDOException $e){
+            } 
+            catch(\PDOException $e)
+            {
                 throw new \RuntimeException($e->getMessage(), (int) $e->getCode());
             }
         }
@@ -70,20 +75,40 @@ use App\Model\User;
                 }
          
         }
-    
-        public function update($key, $value, int $userId): void
+
+        public function update(user $user): int
         {
-            $query = "UPDATE user SET $key = '$value'  WHERE user_id = :user_id";
+            $query = 'UPDATE `user` SET first_name = :first_name, last_name = :last_name, middle_name =:middle_name, gender = :gender, birth_date = :birth_date, email = :email, phone = :phone, avatar_path := :avatar_path WHERE user_id = :user_id';
             $statement = $this->connection->prepare($query);
-            try {
+            try 
+            {
                 $statement->execute([
-                    ":user_id" => $userId
+                    ':user_id' => $user->getUserId(),
+                    ':first_name' => $user->getFirstName(),
+                    ':last_name' => $user->getLastName(),
+                    ':middle_name' => $user->getMiddleName(),
+                    ':gender' => $user->getGender(),
+                    ':birth_date' => $user->getBirthDate(),
+                    ':email' => $user->getEmail(),
+                    ':phone' => $user->getPhone(),
+                    ':avatar_path' => $user->getAvatarPath(),
                 ]);
-            }catch(\PDOException $e){
+                return $user->getUserId();
+            }
+            catch(\PDOException $e)
+            {
                 throw new \RuntimeException($e->getMessage(), (int) $e->getCode());
             }
         }
     
+        public function findAllUsers(): ?array
+        {
+            $sql = "SELECT * FROM user";
+            $result = $this->connection->query($sql);
+            return  $result->fetchAll();
+        }
+        
+        
         public function update_avatar_path(int $userId, string $format): void
         {
             $query = "UPDATE user SET avatar_path = :link_avatar WHERE user_id = $userId";

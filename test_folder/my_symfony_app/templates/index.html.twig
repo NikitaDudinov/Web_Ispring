@@ -1,0 +1,9 @@
+{% extends "base.html.twig" %}
+{% block title %}User Action{% endblock %}
+{% block content %}
+<div>
+   {% for action in array_action %}
+    <a href="{{action[1]}}">{{action[0]}}</a>
+   {% endfor %}  
+</div>
+{% endblock %}

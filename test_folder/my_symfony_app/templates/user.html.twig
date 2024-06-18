@@ -1,0 +1,18 @@
+<p>First Name: {{user.GetFirstName}}</p>
+<p>Last Name: {{user.GetLastName}}</p>
+<p>Middle Name: {{user.GetMiddleName}}</p>
+<p>Gender: {{user.GetGender}}</p>
+<p>Email: {{user.GetEmail}}</p>
+<p>Phone:{{user.GetPhone}}</p>
+{% if user.GetAvatarPath is not empty%}
+    <p>Avatar Path: {{user.GetAvatarPath}}</p>
+    <img src="../uploads/{{user.GetAvatarPath}}"  alt=""> 
+{% endif%}
+<form action="/user/delete" method="post">
+<input name="user_id" id="user_id" type="hidden" value={{user.getUserId()}}>
+<button class="button" type="submit">Delete</button>
+</form>
+<form action="/user/update" method="post">
+<input name="user_id" id="user_id" type="hidden" value={{user.getUserId()}}>
+<button class="button" type="submit">Update</button>
+</form>

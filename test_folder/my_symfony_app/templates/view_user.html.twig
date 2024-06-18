@@ -1,0 +1,7 @@
+{% extends "base.html.twig" %}
+{% block title %}View User{% endblock %}
+{% block content %}
+<ul>
+    {% include "user.html.twig" with [user] %}
+</ul>
+{% endblock %}

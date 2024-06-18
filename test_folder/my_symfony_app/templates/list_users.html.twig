@@ -1,0 +1,20 @@
+{% extends "base.html.twig" %}
+{% block title %}Users list{% endblock %}
+{% block head %}
+   {{ parent() }}
+    <style>
+        div {
+            display: flex;
+        }
+        .button {
+            margin: 10px 0 10px 15px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<ul>
+   {% for user in users_list %} 
+    {% include "user_in_list.html.twig" with [user] %}
+   {% endfor %}
+</ul>
+{% endblock %}

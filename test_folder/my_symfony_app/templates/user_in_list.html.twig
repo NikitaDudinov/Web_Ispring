@@ -1,0 +1,11 @@
+  <div>
+    <p>{{user.email}}</p>
+    <form action="/user/show" method="get">
+        <input name="user_id" id="user_id" type="hidden" value={{user.userId}}>
+        <button class="button" type="submit">View</button>
+    </form>
+    <form action="/user/delete" method="post">
+        <input name="user_id" id="user_id" type="hidden" value={{user.userId}}>
+        <button class="button" type="submit">Delete</button>
+    </form>
+</div>

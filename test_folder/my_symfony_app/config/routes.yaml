@@ -7,7 +7,6 @@ add_user_form:
     path: /user/publish_form
     controller: App\Controller\UserController::publish_form
 
-
 delete_user_form:
     path: /user/delete_form
     controller: App\Controller\UserController::delete_form
@@ -16,6 +15,10 @@ show_user_form:
     path: /user/show_form
     controller: App\Controller\UserController::show_form
 
+update_user_form:
+    path: /user/update_form
+    controller: App\Controller\UserController::update_form
+
 add_user:
     path: /user/publish
     controller: App\Controller\UserController::publishUser
@@ -23,17 +26,26 @@ add_user:
 
 delete_user:
     path: /user/delete
-    controller: App\Controller\UserController::deleteUser
+    controller: App\Controller\UserController::deleteuser
     methods: POST    
 
-find_user:
-    path: /user/find
-    controller: App\Controller\UserController::findUser
-    methods: GET
+update_user_content:
+    path: /user/update_content
+    controller: App\Controller\UserController::updateUser
+    methods: POST
+
+update_user:
+    path: /user/update
+    controller: App\Controller\UserController::updateUser
+    methods: POST
 
 show_user:
-    path: /user/{userId}
+    path: /user/show
     controller: App\Controller\UserController::showUser
     methods: GET
 
+show_users:
+    path: /users    
+    controller: App\Controller\UserController::showAllUser
+    methods: get
 
